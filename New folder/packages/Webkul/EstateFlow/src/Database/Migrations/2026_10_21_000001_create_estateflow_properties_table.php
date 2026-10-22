@@ -1,0 +1,3 @@
+<?php
+use Illuminate\Database\Migrations\Migration; use Illuminate\Database\Schema\Blueprint; use Illuminate\Support\Facades\Schema;
+return new class extends Migration { public function up(): void { Schema::create('estateflow_properties', function(Blueprint $table) { $table->id(); $table->unsignedBigInteger('user_id')->nullable()->index(); $table->string('name'); $table->string('address')->nullable(); $table->unsignedBigInteger('price_cents')->nullable(); $table->unsignedSmallInteger('bedrooms')->nullable(); $table->json('facts')->nullable(); $table->boolean('active')->default(true)->index(); $table->timestamps(); $table->index(['user_id','active']); }); } public function down(): void { Schema::dropIfExists('estateflow_properties'); } };
