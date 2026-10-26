@@ -21,12 +21,22 @@ return new class extends Migration
             $table->string('name')->after('code')->nullable();
         });
 
-        DB::table('lead_pipeline_stages')
-            ->join('lead_stages', 'lead_pipeline_stages.lead_stage_id', '=', 'lead_stages.id')
-            ->update([
-                'lead_pipeline_stages.code' => DB::raw($tablePrefix.'lead_stages.code'),
-                'lead_pipeline_stages.name' => DB::raw($tablePrefix.'lead_stages.name'),
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            $pipelineStagesTable = $tablePrefix.'lead_pipeline_stages';
+            $stagesTable = $tablePrefix.'lead_stages';
+
+            DB::table('lead_pipeline_stages')->update([
+                'code' => DB::raw("(SELECT {$stagesTable}.code FROM {$stagesTable} WHERE {$stagesTable}.id = {$pipelineStagesTable}.lead_stage_id)"),
+                'name' => DB::raw("(SELECT {$stagesTable}.name FROM {$stagesTable} WHERE {$stagesTable}.id = {$pipelineStagesTable}.lead_stage_id)"),
             ]);
+        } else {
+            DB::table('lead_pipeline_stages')
+                ->join('lead_stages', 'lead_pipeline_stages.lead_stage_id', '=', 'lead_stages.id')
+                ->update([
+                    'lead_pipeline_stages.code' => DB::raw($tablePrefix.'lead_stages.code'),
+                    'lead_pipeline_stages.name' => DB::raw($tablePrefix.'lead_stages.name'),
+                ]);
+        }
 
         Schema::table('lead_pipeline_stages', function (Blueprint $table) use ($tablePrefix) {
             $table->dropForeign($tablePrefix.'lead_pipeline_stages_lead_stage_id_foreign');
