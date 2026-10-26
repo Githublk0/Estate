@@ -18,7 +18,11 @@ return new class extends Migration
 
         $tablePrefix = DB::getTablePrefix();
 
-        DB::statement('UPDATE '.$tablePrefix."attribute_values SET unique_id = CONCAT(entity_id, '|', attribute_id)");
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            DB::statement('UPDATE '.$tablePrefix."attribute_values SET unique_id = CAST(entity_id AS TEXT) || '|' || CAST(attribute_id AS TEXT)");
+        } else {
+            DB::statement('UPDATE '.$tablePrefix."attribute_values SET unique_id = CONCAT(entity_id, '|', attribute_id)");
+        }
 
         Schema::table('attribute_values', function (Blueprint $table) {
             $table->unique('unique_id');
@@ -32,7 +36,6 @@ return new class extends Migration
     {
         Schema::table('attribute_values', function (Blueprint $table) {
             $table->dropUnique(['unique_id']);
-
             $table->dropColumn('unique_id');
         });
     }
