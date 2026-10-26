@@ -15,13 +15,14 @@ return new class extends Migration
     public function up()
     {
         $tablePrefix = DB::getTablePrefix();
+        $isSqlite = DB::connection()->getDriverName() === 'sqlite';
 
         Schema::table('lead_pipeline_stages', function (Blueprint $table) {
             $table->string('code')->after('id')->nullable();
             $table->string('name')->after('code')->nullable();
         });
 
-        if (DB::connection()->getDriverName() === 'sqlite') {
+        if ($isSqlite) {
             $pipelineStagesTable = $tablePrefix.'lead_pipeline_stages';
             $stagesTable = $tablePrefix.'lead_stages';
 
@@ -38,9 +39,13 @@ return new class extends Migration
                 ]);
         }
 
-        Schema::table('lead_pipeline_stages', function (Blueprint $table) use ($tablePrefix) {
-            $table->dropForeign($tablePrefix.'lead_pipeline_stages_lead_stage_id_foreign');
-            $table->dropColumn('lead_stage_id');
+        Schema::table('lead_pipeline_stages', function (Blueprint $table) use ($tablePrefix, $isSqlite) {
+            // SQLite cannot drop a foreign key by name. Keep the legacy FK column on SQLite;
+            // the application uses the copied code/name columns after this migration.
+            if (! $isSqlite) {
+                $table->dropForeign($tablePrefix.'lead_pipeline_stages_lead_stage_id_foreign');
+                $table->dropColumn('lead_stage_id');
+            }
 
             $table->unique(['code', 'lead_pipeline_id']);
             $table->unique(['name', 'lead_pipeline_id']);
@@ -54,14 +59,19 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('lead_pipeline_stages', function (Blueprint $table) {
+        $isSqlite = DB::connection()->getDriverName() === 'sqlite';
+
+        Schema::table('lead_pipeline_stages', function (Blueprint $table) use ($isSqlite) {
+            $table->dropUnique('lead_pipeline_stages_code_lead_pipeline_id_unique');
+            $table->dropUnique('lead_pipeline_stages_name_lead_pipeline_id_unique');
             $table->dropColumn('code');
             $table->dropColumn('name');
 
-            $table->integer('lead_stage_id')->unsigned();
-            $table->foreign('lead_stage_id')->references('id')->on('lead_stages')->onDelete('cascade');
-
-            $table->dropUnique(['lead_pipeline_stages_code_lead_pipeline_id_unique', 'lead_pipeline_stages_name_lead_pipeline_id_unique']);
+            // On SQLite the original FK column was intentionally retained in up().
+            if (! $isSqlite) {
+                $table->integer('lead_stage_id')->unsigned();
+                $table->foreign('lead_stage_id')->references('id')->on('lead_stages')->onDelete('cascade');
+            }
         });
     }
 };
