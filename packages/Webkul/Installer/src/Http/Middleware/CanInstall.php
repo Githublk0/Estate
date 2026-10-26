@@ -15,6 +15,12 @@ class CanInstall
      */
     public function handle(Request $request, Closure $next): mixed
     {
+        // Feature tests create isolated databases and must exercise application routes without
+        // depending on a developer's storage/installed marker or production installation state.
+        if (app()->runningUnitTests()) {
+            return $next($request);
+        }
+
         if (Str::contains($request->getPathInfo(), '/install')) {
             /**
              * Once the application is fully installed, the installer and its API endpoints must be
@@ -63,9 +69,9 @@ class CanInstall
 
             /**
              * Backfill for an application installed before completion was recorded in the database.
-             * Reaching here means the marker file was missing while the database was fully
-             * installed, so the flag is written once and then travels with the data, keeping the
-             * installer closed on every later deploy that arrives without `storage/`.
+             * Reaching here means the marker file was missing while the database was fully installed,
+             * so the flag is written once and then travels with the data, keeping the installer closed
+             * on every later deploy that arrives without `storage/`.
              */
             $databaseManager->markInstallationCompleted();
 
