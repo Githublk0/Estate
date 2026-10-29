@@ -3,6 +3,7 @@
 .idea
 .php_cs.cache
 .phpunit.result.cache
+.phpunit.cache/
 .vscode
 .vagrant
 *.hot
@@ -23,6 +24,7 @@ package-lock.json
 /public/storage
 /public/vendor
 /lang/vendor
+/storage/
 /storage/*.key
 /storage/dcc-data/
 /vendor

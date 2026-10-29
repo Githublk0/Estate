@@ -114,7 +114,9 @@ class NotificationDriver
              * Pusher describes its transport as `useTLS` and is always served over TLS; Reverb
              * carries a scheme instead, which is plain `http` on a local setup.
              */
-            'forceTLS' => $options['useTLS'] ?? (($options['scheme'] ?? 'https') === 'https'),
+            'forceTLS' => $driver === 'reverb'
+                ? (($options['scheme'] ?? 'https') === 'https')
+                : ($options['useTLS'] ?? true),
             'cluster' => $options['cluster'] ?? null,
         ];
     }

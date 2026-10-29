@@ -5,6 +5,7 @@ namespace Webkul\Attribute\Repositories;
 use Carbon\Carbon;
 use Illuminate\Container\Container;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Webkul\Attribute\Contracts\Attribute;
 use Webkul\Attribute\Contracts\AttributeValue;
@@ -143,7 +144,19 @@ class AttributeValueRepository extends Repository
          * If the attribute type is email or phone, check the JSON value.
          */
         if (in_array($attribute->type, ['email', 'phone'])) {
-            $query->whereJsonContains($this->model::$attributeTypeFields[$attribute->type], [['value' => $value]]);
+            $column = $this->model::$attributeTypeFields[$attribute->type];
+
+            if ($query->getConnection()->getDriverName() === 'sqlite') {
+                $table = DB::getTablePrefix().$this->model->getTable();
+
+                $query->whereExists(function ($subQuery) use ($table, $column, $value) {
+                    $subQuery->selectRaw('1')
+                        ->fromRaw('json_each('.$table.'.'.$column.') as attribute_value')
+                        ->whereRaw("json_extract(attribute_value.value, '$.value') = ?", [$value]);
+                });
+            } else {
+                $query->whereJsonContains($column, [['value' => $value]]);
+            }
         } else {
             $query->where($this->model::$attributeTypeFields[$attribute->type], $value);
         }

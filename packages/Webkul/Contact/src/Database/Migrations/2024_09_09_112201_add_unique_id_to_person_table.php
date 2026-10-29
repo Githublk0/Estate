@@ -18,15 +18,27 @@ return new class extends Migration
 
         $tableName = DB::getTablePrefix().'persons';
 
-        DB::statement("
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            DB::statement(<<<SQL
+                UPDATE {$tableName}
+                SET unique_id = CAST(user_id AS TEXT) || '|' ||
+                    CAST(organization_id AS TEXT) || '|' ||
+                    JSON_EXTRACT(emails, '$[0].value') || '|' ||
+                    JSON_EXTRACT(contact_numbers, '$[0].value')
+            SQL);
+
+            return;
+        }
+
+        DB::statement(<<<SQL
             UPDATE {$tableName}
             SET unique_id = CONCAT(
-                user_id, '|', 
-                organization_id, '|', 
+                user_id, '|',
+                organization_id, '|',
                 JSON_UNQUOTE(JSON_EXTRACT(emails, '$[0].value')), '|',
                 JSON_UNQUOTE(JSON_EXTRACT(contact_numbers, '$[0].value'))
             )
-        ");
+        SQL);
     }
 
     /**

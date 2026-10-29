@@ -59,6 +59,8 @@ function detachScopeLeadWithMail(User $owner): array
         'lead_pipeline_stage_id' => $pipeline->stages()->value('id'),
     ]);
 
+    $messageId = uniqid().'@example.invalid';
+
     $email = Email::create([
         'subject' => 'Linked correspondence '.uniqid(),
         'reply' => 'The agreed figure is 48,000 for the year.',
@@ -67,7 +69,8 @@ function detachScopeLeadWithMail(User $owner): array
         'folders' => ['inbox'],
         'lead_id' => $lead->id,
         'from' => ['owner@example.invalid'],
-        'unique_id' => uniqid().'@example.invalid',
+        'unique_id' => $messageId,
+        'message_id' => $messageId,
     ]);
 
     return [$lead, $email];

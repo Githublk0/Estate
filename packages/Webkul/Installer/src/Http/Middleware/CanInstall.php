@@ -31,7 +31,7 @@ class CanInstall
 
                 return redirect()->route('admin.dashboard.index');
             }
-        } elseif (! $this->isAlreadyInstalled()) {
+        } elseif (! app()->runningUnitTests() && ! $this->isAlreadyInstalled()) {
             return redirect()->route('installer.index');
         }
 
@@ -63,9 +63,9 @@ class CanInstall
 
             /**
              * Backfill for an application installed before completion was recorded in the database.
-             * Reaching here means the marker file was missing while the database was fully
-             * installed, so the flag is written once and then travels with the data, keeping the
-             * installer closed on every later deploy that arrives without `storage/`.
+             * Reaching here means the marker file was missing while the database was fully installed,
+             * so the flag is written once and then travels with the data, keeping the installer closed
+             * on every later deploy that arrives without `storage/`.
              */
             $databaseManager->markInstallationCompleted();
 

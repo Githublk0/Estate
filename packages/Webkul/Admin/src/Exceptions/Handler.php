@@ -77,7 +77,7 @@ class Handler extends ExceptionHandler
     private function renderCustomResponse(Throwable $exception)
     {
         if ($exception instanceof HttpException) {
-            $statusCode = in_array($exception->getStatusCode(), [401, 403, 404, 503])
+            $statusCode = in_array($exception->getStatusCode(), [401, 403, 404, 429, 503], true)
                 ? $exception->getStatusCode()
                 : 500;
 
@@ -114,6 +114,6 @@ class Handler extends ExceptionHandler
             ], $errorCode);
         }
 
-        return response()->view('admin::errors.index', compact('errorCode'));
+        return response()->view('admin::errors.index', compact('errorCode'), (int) $errorCode);
     }
 }

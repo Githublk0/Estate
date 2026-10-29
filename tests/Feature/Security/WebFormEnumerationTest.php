@@ -227,9 +227,10 @@ it('leaves the underlying uniqueness check intact for the admin forms', function
 
     $email = 'admin-side-'.bin2hex(random_bytes(4)).'@example.invalid';
 
-    makeEnumerationContact($owner, 'Existing Customer', $email);
-
     $attribute = webFormAttributeFor('persons', 'emails');
+    $attribute->update(['is_unique' => 1]);
+
+    makeEnumerationContact($owner, 'Existing Customer', $email);
 
     expect(app(AttributeValueRepository::class)->isValueUnique(null, 'persons', $attribute, $email))
         ->toBeFalse();

@@ -160,6 +160,8 @@ it('does not leak a lead\'s correspondence to a user outside its scope', functio
 
     $correspondent = 'client-'.bin2hex(random_bytes(4)).'@example.invalid';
 
+    $messageId = uniqid().'@example.invalid';
+
     Email::create([
         'subject' => $subject,
         'reply' => $reply,
@@ -169,7 +171,8 @@ it('does not leak a lead\'s correspondence to a user outside its scope', functio
         'lead_id' => $lead->id,
         'from' => ['owner@example.invalid'],
         'reply_to' => [$correspondent],
-        'unique_id' => uniqid().'@example.invalid',
+        'unique_id' => $messageId,
+        'message_id' => $messageId,
     ]);
 
     $response = $this->actingAs($outsider, 'user')

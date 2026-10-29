@@ -1,5 +1,9 @@
 <?php
 
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+
+uses(DatabaseTransactions::class);
+
 it('can see the admin login page', function () {
     test()->get(route('admin.session.create'))
         ->assertOK();
@@ -7,6 +11,8 @@ it('can see the admin login page', function () {
 
 it('can see the dashboard page after login', function () {
     $admin = getDefaultAdmin();
+
+    securityTestPipeline();
 
     test()->actingAs($admin)
         ->get(route('admin.dashboard.index'))

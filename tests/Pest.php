@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -16,56 +17,27 @@ use Webkul\User\Models\User;
 |--------------------------------------------------------------------------
 |
 | The closure you provide to your test functions is always bound to a specific PHPUnit test
-| case class. By default, that class is "PHPUnit\Framework\TestCase". Of course, you may
-| need to change it using the "uses()" function to bind a different classes or traits.
+| case class. By default, the closure is bound to the PHPUnit\Framework\TestCase class.
+| Of course, you may need to change that using the `uses()` function.
 |
  */
 
 uses(TestCase::class)->in('Feature');
 
 /**
- * The configured APP_URL may point at a subdirectory (for example when the application is served
- * from `/public` under a project folder). Laravel's test client prepends that URL to every request
- * path, so the resulting path info would carry the subdirectory and no route would ever match,
- * failing every feature test with a 404. Pinning a bare root URL keeps request paths aligned with
- * the routes as registered, whatever APP_URL happens to be on the machine running the tests.
+ * Keep test request paths aligned with their registered routes even when APP_URL contains a
+ * subdirectory on the machine running the suite.
  */
 uses()->beforeEach(function () {
     URL::forceRootUrl('http://localhost');
 })->in('Feature');
 
-/*
-|--------------------------------------------------------------------------
-| Expectations
-|--------------------------------------------------------------------------
-|
-| When you're writing tests, you often need to check that values meet certain conditions. The
-| "expect()" function gives you access to a set of "expectations" methods that you can use
-| to assert different things. Of course, you may extend the Expectation API at any time.
-|
- */
-
 expect()->extend('toBeOne', function () {
     return $this->toBe(1);
 });
 
-/*
-|--------------------------------------------------------------------------
-| Functions
-|--------------------------------------------------------------------------
-|
-| While Pest is very powerful out-of-the-box, you may have some testing code specific to your
-| project that you don't want to repeat in every file. Here you can also expose helpers as
-| global functions to help you to reduce the number of lines of code in your test files.
-|
- */
-
 /**
- * Get default admin which is created on fresh instance.
- *
- * The parallel test databases are migrated but not seeded, so the seeded administrator is not
- * always there to find; one is created when it is missing, rather than handing back null and
- * failing the caller on a property read.
+ * Get the default admin, creating one when the test database is not seeded.
  *
  * @return User
  */
@@ -102,16 +74,13 @@ function getDefaultAdmin()
  */
 function actingAsSanctumAuthenticatedAdmin()
 {
-    return Sanctum::actingAs(
-        getDefaultAdmin(),
-        ['*']
-    );
+    return Sanctum::actingAs(getDefaultAdmin(), ['*']);
 }
 
 /**
  * Get first name.
  *
- * @param  string  $fullName
+ * @param string $fullName
  * @return string
  */
 function getFirstName($fullName)
@@ -120,18 +89,10 @@ function getFirstName($fullName)
 }
 
 /**
- * The default lead pipeline and its first stage, created when they are absent.
- *
- * The suite runs in parallel against separate databases, which are migrated but not seeded. A test
- * that hardcoded pipeline id 1 therefore referred to a row that existed only in the developer's own
- * database, and inserting a lead failed on its foreign key.
+ * A default lead pipeline with the first stage, using the active driver schema.
  */
 function securityTestPipeline(): Pipeline
 {
-    /**
-     * A lead also needs a source and a type: the web form controller falls back to the first of
-     * each when the submission does not name one, and dereferences the result without checking.
-     */
     if (! Source::query()->count()) {
         Source::create(['name' => 'Web Form']);
     }
@@ -151,12 +112,19 @@ function securityTestPipeline(): Pipeline
     }
 
     if (! $pipeline->stages()->count()) {
-        $pipeline->stages()->create([
-            'name' => 'New',
-            'code' => 'new',
+        $stage = [
             'probability' => 100,
             'sort_order' => 1,
-        ]);
+        ];
+
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            $stage['code'] = 'new';
+            $stage['name'] = 'New';
+        } else {
+            $stage['lead_stage_id'] = DB::table('lead_stages')->value('id');
+        }
+
+        $pipeline->stages()->create($stage);
     }
 
     return $pipeline;
@@ -165,10 +133,9 @@ function securityTestPipeline(): Pipeline
 /**
  * An attribute by entity and code, created when it is absent.
  *
- * The parallel test databases are migrated but not seeded, so they carry only the attributes that
- * migrations add — `leads.title`, `persons.name` and the rest are missing. A test that skipped a
- * missing attribute silently built a web form with no fields and then failed on an assertion that
- * had nothing to do with the cause.
+ * @param string $entityType
+ * @param string $code
+ * @return Attribute
  */
 function webFormAttributeFor(string $entityType, string $code): Attribute
 {
@@ -181,11 +148,6 @@ function webFormAttributeFor(string $entityType, string $code): Attribute
         return $attribute;
     }
 
-    /**
-     * The type decides how a value is stored and validated — an `email` or `phone` attribute holds
-     * a list of entries, where a `text` one holds a string — so creating these as plain text made
-     * the insert fail on converting an array to a string.
-     */
     $types = [
         'emails' => 'email',
         'contact_numbers' => 'phone',
