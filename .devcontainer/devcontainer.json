@@ -1,0 +1,12 @@
+{
+  "name": "EstateFlow PHP 8.4",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    }
+  },
+  "remoteUser": "codespace"
+}

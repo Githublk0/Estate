@@ -9,9 +9,11 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "ext-intl": "*",
         "barryvdh/laravel-dompdf": "^3.1",
         "diglactic/laravel-breadcrumbs": "^10.0",
-        "enshrined/svg-sanitize": "^0.22.0",
+        "enshrined/svg-sanitize": "^1.1.1",
+        "estateflow/laravel-estateflow": "0.1.0",
         "google/apiclient": "^2.18",
         "guzzlehttp/guzzle": "^7.8",
         "khaled.alshamaa/ar-php": "^6.3",
@@ -28,8 +30,7 @@
         "prettus/l5-repository": "^3.0",
         "pusher/pusher-php-server": "^7.3",
         "smalot/pdfparser": "^2.11",
-        "webklex/laravel-imap": "^6.0",
-        "estateflow/laravel-estateflow": "@dev"
+        "webklex/laravel-imap": "^6.0"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.14",
@@ -47,7 +48,7 @@
     "config": {
         "optimize-autoloader": true,
         "platform": {
-            "php": "8.3.30"
+            "php": "8.4.26"
         },
         "preferred-install": "dist",
         "sort-packages": true,

@@ -10,6 +10,10 @@ This changelog consists of the bug & security fixes and new features being inclu
 
 * [fixed] Corrected email and phone uniqueness checks for SQLite and honored Reverb's configured transport scheme.
 
+* [security] Updated Symfony MIME to a release that fixes CVE-2026-45070.
+
+* [enhancement] Declared the PHP intl extension requirement and added it to the Codespaces development image.
+
 ## **v2.2.7 (16th of Oct 2026)**
 
 * [fixed] Fixed a web form submission creating a duplicate contact when the address differed only in case.
