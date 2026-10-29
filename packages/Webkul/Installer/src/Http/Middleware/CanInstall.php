@@ -15,12 +15,6 @@ class CanInstall
      */
     public function handle(Request $request, Closure $next): mixed
     {
-        // Feature tests create isolated databases and must exercise application routes without
-        // depending on a developer's storage/installed marker or production installation state.
-        if (app()->runningUnitTests()) {
-            return $next($request);
-        }
-
         if (Str::contains($request->getPathInfo(), '/install')) {
             /**
              * Once the application is fully installed, the installer and its API endpoints must be
@@ -37,7 +31,7 @@ class CanInstall
 
                 return redirect()->route('admin.dashboard.index');
             }
-        } elseif (! $this->isAlreadyInstalled()) {
+        } elseif (! app()->runningUnitTests() && ! $this->isAlreadyInstalled()) {
             return redirect()->route('installer.index');
         }
 

@@ -190,6 +190,10 @@ it('detaches a quote whose id does not name a lead', function () {
 
     $quote = leadViewActionsQuote('Quote with no matching lead id');
 
+    while (Lead::whereKey($quote->id)->exists()) {
+        $quote = leadViewActionsQuote('Quote with no matching lead id');
+    }
+
     expect(Lead::find($quote->id))->toBeNull();
 
     $lead->quotes()->attach($quote->id);
