@@ -8,16 +8,40 @@ use Illuminate\Support\Str;
 
 class BackfillPropertyAgencies extends Command
 {
-    protected $signature = 'estateflow:backfill-agencies';
+    protected $signature = 'estateflow:backfill-agencies {--dry-run : Preview the properties that would be backfilled}';
 
     protected $description = 'Set missing property agency IDs from non-null user IDs.';
 
     public function handle(): int
     {
         $ownerlessCount = DB::table('estateflow_properties')
-            ->whereNull('agency_id')
             ->whereNull('user_id')
             ->count();
+
+        if ($this->option('dry-run')) {
+            $backfillableProperties = DB::table('estateflow_properties')
+                ->select('id', 'name', 'user_id')
+                ->whereNull('agency_id')
+                ->whereNotNull('user_id')
+                ->orderBy('id')
+                ->get();
+
+            $this->info(sprintf(
+                'Dry run: %d EstateFlow %s would be backfilled.',
+                $backfillableProperties->count(),
+                Str::plural('property', $backfillableProperties->count()),
+            ));
+
+            $this->line('ID | Name | User ID');
+
+            foreach ($backfillableProperties as $property) {
+                $this->line(sprintf('%d | %s | %d', $property->id, $property->name, $property->user_id));
+            }
+
+            $this->line(sprintf('Rows with NULL user_id: %d (left unchanged).', $ownerlessCount));
+
+            return self::SUCCESS;
+        }
 
         $backfilledCount = DB::table('estateflow_properties')
             ->whereNull('agency_id')
