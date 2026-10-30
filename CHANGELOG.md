@@ -16,6 +16,8 @@ This changelog consists of the bug & security fixes and new features being inclu
 
 * [fixed] Assigned new EstateFlow properties to the authenticated user's agency.
 
+* [enhancement] Added an EstateFlow command to backfill agency IDs from non-null property owner IDs.
+
 ## **v2.2.7 (16th of Oct 2026)**
 
 * [fixed] Fixed a web form submission creating a duplicate contact when the address differed only in case.
