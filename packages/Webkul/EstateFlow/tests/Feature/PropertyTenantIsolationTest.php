@@ -57,6 +57,22 @@ class PropertyTenantIsolationTest extends TestCase
         $this->assertDatabaseHas('estateflow_properties', ['id' => $propertyIds['other']]);
     }
 
+    public function test_a_created_property_belongs_only_to_the_authenticated_agency(): void
+    {
+        [$agency, $otherAgency] = $this->createAgencies();
+
+        $this->actingAs($agency, 'user');
+
+        $property = Property::create(['name' => 'New agency property']);
+
+        $this->assertSame($agency->id, $property->agency_id);
+        $this->assertNotNull(Property::query()->find($property->id));
+
+        $this->actingAs($otherAgency, 'user');
+
+        $this->assertNull(Property::query()->find($property->id));
+    }
+
     /**
      * @return array{0: User, 1: User}
      */

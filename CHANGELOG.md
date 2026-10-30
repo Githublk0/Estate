@@ -14,6 +14,8 @@ This changelog consists of the bug & security fixes and new features being inclu
 
 * [enhancement] Declared the PHP intl extension requirement and added it to the Codespaces development image.
 
+* [fixed] Assigned new EstateFlow properties to the authenticated user's agency.
+
 ## **v2.2.7 (16th of Oct 2026)**
 
 * [fixed] Fixed a web form submission creating a duplicate contact when the address differed only in case.

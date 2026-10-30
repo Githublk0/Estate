@@ -18,6 +18,10 @@ class Property extends Model
 
     protected static function booted(): void
     {
+        static::creating(function (self $property): void {
+            $property->agency_id = auth()->guard('user')->id();
+        });
+
         static::addGlobalScope('agency', function (Builder $builder): void {
             $agencyId = auth()->guard('user')->id();
 
