@@ -14,6 +14,7 @@ php artisan test packages/Webkul/EstateFlow/tests
 ```
 
 ## Production guardrails
+- The `qualify-lead` endpoint is restricted to authenticated Krayin users.
 - Scope every property/event query to the authenticated tenant.
 - Use signed auth context, never client-provided owner IDs.
 - Add rate limits, webhook signatures, consent and opt-out checks.
