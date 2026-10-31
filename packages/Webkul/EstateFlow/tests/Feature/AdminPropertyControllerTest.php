@@ -65,6 +65,14 @@ class AdminPropertyControllerTest extends TestCase
             ->assertRedirect(route('admin.estateflow.properties.create'))
             ->assertSessionHasErrors('bedrooms');
 
+        $this->from(route('admin.estateflow.properties.create'))
+            ->post(route('admin.estateflow.properties.store'), [
+                'name' => 'Invalid property',
+                'price_cents' => -1,
+            ])
+            ->assertRedirect(route('admin.estateflow.properties.create'))
+            ->assertSessionHasErrors('price_cents');
+
         $storeResponse = $this->post(route('admin.estateflow.properties.store'), [
             'name' => 'Pilot apartment',
             'address' => '1 Example Street',
