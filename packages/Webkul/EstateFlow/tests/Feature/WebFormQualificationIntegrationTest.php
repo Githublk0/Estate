@@ -61,6 +61,7 @@ class WebFormQualificationIntegrationTest extends TestCase
                 'property_type' => 'Condo',
                 'timeline' => '30 days',
                 'wants_viewing' => true,
+                'agency_id' => 999999,
             ],
             'persons' => [
                 'name' => 'EstateFlow Visitor',
@@ -78,6 +79,16 @@ class WebFormQualificationIntegrationTest extends TestCase
             ->where('event_type', 'lead.qualified')
             ->firstOrFail();
 
+        $this->assertSame($lead->id, $event->lead_id);
+        $this->assertSame($lead->user_id, $event->user_id);
+        $this->assertNotSame(999999, $event->user_id);
+        $this->assertSame([
+            'budget' => '450000',
+            'location' => 'Austin',
+            'property_type' => 'Condo',
+            'timeline' => '30 days',
+            'wants_viewing' => true,
+        ], $event->payload['answers']);
         $this->assertSame('Hot', $event->payload['result']['status']);
         $this->assertSame(100, $event->payload['result']['score']);
         $this->assertSame('webform', $event->channel);
