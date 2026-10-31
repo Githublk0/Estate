@@ -14,6 +14,9 @@ class EstateFlowServiceProvider extends ServiceProvider
     {
         $this->app->singleton(LeadQualificationService::class);
 
+        $this->mergeConfigFrom(dirname(__DIR__).'/Config/menu.php', 'menu.admin');
+        $this->mergeConfigFrom(dirname(__DIR__).'/Config/acl.php', 'acl');
+
         if ($this->app->runningInConsole()) {
             $this->commands([
                 BackfillPropertyAgencies::class,
@@ -25,6 +28,8 @@ class EstateFlowServiceProvider extends ServiceProvider
     {
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
         $this->loadRoutesFrom(__DIR__.'/../Routes/routes.php');
+        $this->loadTranslationsFrom(__DIR__.'/../Resources/lang', 'estateflow');
+        $this->loadViewsFrom(__DIR__.'/../Resources/views', 'estateflow');
 
         Event::listen('lead.create.after', QualifyWebFormLead::class);
     }
