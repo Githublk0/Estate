@@ -20,6 +20,8 @@ This changelog consists of the bug & security fixes and new features being inclu
 
 * [feature] Added a dry-run preview to the EstateFlow agency backfill command.
 
+* [feature] Added an EstateFlow admin workspace for tenant-scoped property inventory and qualification history.
+
 ## **v2.2.7 (16th of Oct 2026)**
 
 * [fixed] Fixed a web form submission creating a duplicate contact when the address differed only in case.

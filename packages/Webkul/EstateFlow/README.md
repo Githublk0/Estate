@@ -4,7 +4,9 @@ This package adds the first production boundary for EstateFlow without modifying
 
 `WebFormController::formStore` → `lead.create.after` → `QualifyWebFormLead` → `LeadQualificationService` → `estateflow_events`.
 
-It owns property and event migrations, deterministic qualification, an API route, and a WebForm listener. The score stays deterministic until an approved model, retrieval corpus, evaluation set, and human-escalation policy are configured.
+It owns property and event migrations, deterministic qualification, an authenticated API route, a WebForm listener, a tenant-scoped admin property inventory, and qualification history for events owned by the signed-in user. The score stays deterministic until an approved model, retrieval corpus, evaluation set, and human-escalation policy are configured.
+
+Property ownership uses `agency_id = authenticated Krayin user ID`. Public WebForm submissions do not identify an agency, so their qualification events are not attributed to an agency's history until an explicit ownership policy is approved.
 
 ## Install
 ```bash
