@@ -17,15 +17,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        app(LaravelVite::class)->createAssetPathsUsing(
-            function (string $path, ?bool $secure = null): string {
-                if (request()->routeIs('admin.*')) {
-                    return '/'.ltrim($path, '/');
-                }
+        app()->booted(function () {
+            app(LaravelVite::class)->createAssetPathsUsing(
+                function (string $path, ?bool $secure = null): string {
+                    $adminBuildDirectory = trim(config('krayin-vite.viters.admin.build_directory'), '/').'/';
 
-                return asset($path, $secure);
-            }
-        );
+                    if (str_starts_with(ltrim($path, '/'), $adminBuildDirectory)) {
+                        return '/'.ltrim($path, '/');
+                    }
+
+                    return asset($path, $secure);
+                }
+            );
+        });
 
         $middleware->trustProxies(
             at: '*',
