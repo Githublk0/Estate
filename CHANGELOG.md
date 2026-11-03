@@ -4,6 +4,8 @@ This changelog consists of the bug & security fixes and new features being inclu
 
 ## **v2.2.8 (Upcoming)**
 
+* [fixed] Generated same-origin relative URLs for admin assets accessed through Codespaces.
+
 * [fixed] Loaded admin styles and images correctly when the application is accessed through an HTTPS proxy.
 
 * [security] Kept installer endpoints protected on installed instances even when the marker file is missing.

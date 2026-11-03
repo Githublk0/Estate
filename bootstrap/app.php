@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Foundation\Vite as LaravelVite;
 use Illuminate\Http\Request;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use Webkul\Installer\Http\Middleware\CanInstall;
@@ -16,6 +17,20 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        app()->booted(function () {
+            app(LaravelVite::class)->createAssetPathsUsing(
+                function (string $path, ?bool $secure = null): string {
+                    $adminBuildDirectory = trim(config('krayin-vite.viters.admin.build_directory'), '/').'/';
+
+                    if (str_starts_with(ltrim($path, '/'), $adminBuildDirectory)) {
+                        return '/'.ltrim($path, '/');
+                    }
+
+                    return asset($path, $secure);
+                }
+            );
+        });
+
         $middleware->trustProxies(
             at: '*',
             headers: Request::HEADER_X_FORWARDED_PROTO,
