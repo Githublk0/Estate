@@ -25,14 +25,14 @@ class SessionController extends Controller
     public function create(): RedirectResponse|View
     {
         if (auth()->guard('user')->check()) {
-            return redirect()->route('admin.dashboard.index');
+            return redirect()->away(route('admin.dashboard.index', absolute: false));
         }
 
         $previousUrl = url()->previous();
 
         $intendedUrl = str_contains($previousUrl, 'admin')
             ? $previousUrl
-            : route('admin.dashboard.index');
+            : route('admin.dashboard.index', absolute: false);
 
         session()->put('url.intended', $intendedUrl);
 
@@ -56,7 +56,7 @@ class SessionController extends Controller
 
             session()->flash('error', trans('admin::app.users.login-error'));
 
-            return redirect()->back();
+            return redirect()->away(route('admin.session.create', absolute: false));
         }
 
         $this->clearRateLimit();
@@ -66,7 +66,7 @@ class SessionController extends Controller
 
             auth()->guard('user')->logout();
 
-            return redirect()->route('admin.session.create');
+            return redirect()->away(route('admin.session.create', absolute: false));
         }
 
         $menus = menu()->getItems('admin');
@@ -79,19 +79,20 @@ class SessionController extends Controller
 
                 auth()->guard('user')->logout();
 
-                return redirect()->route('admin.session.create');
+                return redirect()->away(route('admin.session.create', absolute: false));
             }
 
-            return redirect()->to($availableNextMenu->getUrl());
+            return $this->redirectToAdminUrl($availableNextMenu->getUrl());
         }
 
-        $hasAccessToIntendedUrl = $this->canAccessIntendedUrl($menus, redirect()->getIntendedUrl());
+        $intendedUrl = redirect()->getIntendedUrl();
+        $hasAccessToIntendedUrl = $this->canAccessIntendedUrl($menus, $intendedUrl);
 
         if ($hasAccessToIntendedUrl) {
-            return redirect()->intended(route('admin.dashboard.index'));
+            return $this->redirectToAdminUrl($intendedUrl ?? $hasAccessToIntendedUrl->getUrl());
         }
 
-        return redirect()->to($availableNextMenu->getUrl());
+        return $this->redirectToAdminUrl($availableNextMenu->getUrl());
     }
 
     /**
@@ -156,7 +157,7 @@ class SessionController extends Controller
 
         session()->regenerateToken();
 
-        return redirect()->route('admin.session.create');
+        return redirect()->away(route('admin.session.create', absolute: false));
     }
 
     /**
@@ -168,8 +169,12 @@ class SessionController extends Controller
             return null;
         }
 
+        $intendedPath = $this->adminPathFromUrl($url);
+
         foreach ($menus as $menu) {
-            if ($menu->getUrl() === $url) {
+            $menuPath = $this->adminPathFromUrl($menu->getUrl());
+
+            if ($menu->getUrl() === $url || ($intendedPath !== null && $menuPath === $intendedPath)) {
                 return $menu;
             }
 
@@ -183,5 +188,36 @@ class SessionController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * Redirect to an admin URL without carrying an internal server host into the browser.
+     */
+    protected function redirectToAdminUrl(string $url): RedirectResponse
+    {
+        $path = $this->adminPathFromUrl($url);
+
+        if ($path === null) {
+            return redirect()->to($url);
+        }
+
+        $query = parse_url($url, PHP_URL_QUERY);
+
+        return redirect()->away($path.($query ? '?'.$query : ''));
+    }
+
+    /**
+     * Return the path when a URL points into the configured admin area.
+     */
+    protected function adminPathFromUrl(string $url): ?string
+    {
+        $path = parse_url($url, PHP_URL_PATH);
+        $adminPath = '/'.trim(config('app.admin_path'), '/');
+
+        if (! is_string($path) || ($path !== $adminPath && ! str_starts_with($path, $adminPath.'/'))) {
+            return null;
+        }
+
+        return $path;
     }
 }
