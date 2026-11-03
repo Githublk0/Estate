@@ -25,7 +25,7 @@
                 {!! view_render_event('admin.sessions.login.form_controls.before') !!}
 
                 <!-- Login Form -->
-                <x-admin::form :action="route('admin.session.store')">
+                <x-admin::form :action="route('admin.session.store', absolute: false)">
                     <p class="p-4 text-xl font-bold text-gray-800 dark:text-white">
                         @lang('admin::app.users.login.title')
                     </p>
@@ -83,7 +83,7 @@
                         <!-- Forgot Password Link -->
                         <a
                             class="cursor-pointer text-xs font-semibold leading-6 text-brandColor"
-                            href="{{ route('admin.forgot_password.create') }}"
+                            href="{{ route('admin.forgot_password.create', absolute: false) }}"
                         >
                             @lang('admin::app.users.login.forget-password-link')
                         </a>

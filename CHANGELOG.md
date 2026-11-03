@@ -4,6 +4,8 @@ This changelog consists of the bug & security fixes and new features being inclu
 
 ## **v2.2.8 (Upcoming)**
 
+* [fixed] Kept admin login submissions and redirects on the current origin when accessed through Codespaces.
+
 * [fixed] Generated same-origin relative URLs for admin assets accessed through Codespaces.
 
 * [fixed] Loaded admin styles and images correctly when the application is accessed through an HTTPS proxy.
