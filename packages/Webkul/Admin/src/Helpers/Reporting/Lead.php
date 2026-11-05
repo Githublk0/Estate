@@ -53,7 +53,7 @@ class Lead extends AbstractReporting
             $this->pipeline = $this->pipelineRepository->getDefaultPipeline();
         }
 
-        $stages = $this->pipeline->stages;
+        $stages = $this->pipeline?->stages ?? collect();
 
         $this->allStageIds = $stages->pluck('id')->toArray();
 
@@ -152,6 +152,10 @@ class Lead extends AbstractReporting
      */
     public function getTotalLeads($startDate, $endDate): int
     {
+        if (! $this->pipeline) {
+            return 0;
+        }
+
         return $this->leadRepository
             ->resetModel()
             ->where('lead_pipeline_id', $this->pipeline->id)
@@ -209,6 +213,10 @@ class Lead extends AbstractReporting
      */
     public function getTotalLeadValue($startDate, $endDate): float
     {
+        if (! $this->pipeline) {
+            return 0;
+        }
+
         return $this->leadRepository
             ->resetModel()
             ->where('lead_pipeline_id', $this->pipeline->id)
@@ -237,6 +245,10 @@ class Lead extends AbstractReporting
      */
     public function getAverageLeadValue($startDate, $endDate): float
     {
+        if (! $this->pipeline) {
+            return 0;
+        }
+
         return $this->leadRepository
             ->resetModel()
             ->where('lead_pipeline_id', $this->pipeline->id)
@@ -343,6 +355,10 @@ class Lead extends AbstractReporting
      */
     public function getOpenLeadsByStates()
     {
+        if (! $this->pipeline || empty($this->allStageIds)) {
+            return collect();
+        }
+
         return $this->leadRepository
             ->resetModel()
             ->select(

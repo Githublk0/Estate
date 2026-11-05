@@ -4,6 +4,8 @@ This changelog consists of the bug & security fixes and new features being inclu
 
 ## **v2.2.8 (Upcoming)**
 
+* [fixed] Kept the dashboard and its reports available when no default lead pipeline is configured.
+
 * [fixed] Kept admin login submissions and redirects on the current origin when accessed through Codespaces.
 
 * [fixed] Generated same-origin relative URLs for admin assets accessed through Codespaces.
